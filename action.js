@@ -4,7 +4,7 @@ const Jira = require('./common/net/Jira')
 const GitHub = require('./common/net/GitHub')
 
 module.exports = class {
-  constructor ({ githubEvent, argv, config, githubToken }) {
+  constructor({ githubEvent, argv, config, githubToken }) {
     this.Jira = new Jira({
       baseUrl: config.baseUrl,
       token: config.token,
@@ -21,7 +21,7 @@ module.exports = class {
     this.githubToken = githubToken
   }
 
-  async execute () {
+  async execute() {
     const { argv, githubEvent } = this
     const projectKey = argv.project
     const issuetypeName = argv.issuetype
@@ -101,17 +101,17 @@ module.exports = class {
     return { issues: await Promise.all(issues) }
   }
 
-  transformFields (fields) {
+  transformFields(fields) {
     return Object.keys(fields).map(fieldKey => ({
       key: fieldKey,
       value: fields[fieldKey],
     }))
   }
 
-  async findTodoInCommits (repo, commits) {
+  async findTodoInCommits(repo, commits) {
     return Promise.all(commits.map(async (c) => {
       const res = await this.GitHub.getCommitDiff(repo.full_name, c.id)
-      const rx = /^\+.*(?:\/\/|#)\s+TODO:(.*)$/gm
+      const rx = /^(\+|\-).*(?:\/\/|\/\*\*|\*)\s*(TODO|FIXME):(.*)$/gm
 
       return getMatches(res, rx, 1)
         .map(_.trim)
@@ -124,7 +124,7 @@ module.exports = class {
   }
 }
 
-function getMatches (string, regex, index) {
+function getMatches(string, regex, index) {
   index || (index = 1)
   const matches = []
   let match
